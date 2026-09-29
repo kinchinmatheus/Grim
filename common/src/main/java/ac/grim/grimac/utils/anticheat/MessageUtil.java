@@ -6,12 +6,14 @@ import ac.grim.grimac.platform.api.player.PlatformPlayer;
 import ac.grim.grimac.platform.api.sender.Sender;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.data.webhook.discord.CompiledDiscordTemplate;
+import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3f;
 import com.github.retrooper.packetevents.util.Vector3i;
 import lombok.experimental.UtilityClass;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,11 +29,15 @@ public class MessageUtil {
     private final Pattern HEX_PATTERN = Pattern.compile("([&§]#[A-Fa-f0-9]{6})|([&§]x([&§][A-Fa-f0-9]){6})");
     private final char PLACEHOLDER_ESCAPE_CHAR = '\uFFFF'; // this specific character holds no significance
 
-    public @NotNull String toUnlabledString(@Nullable Vector3i vec) {
+    public @NotNull String toUnlabledString(@Nullable Vector3d vec) {
         return vec == null ? "null" : vec.x + ", " + vec.y + ", " + vec.z;
     }
 
     public @NotNull String toUnlabledString(@Nullable Vector3f vec) {
+        return vec == null ? "null" : vec.x + ", " + vec.y + ", " + vec.z;
+    }
+
+    public @NotNull String toUnlabledString(@Nullable Vector3i vec) {
         return vec == null ? "null" : vec.x + ", " + vec.y + ", " + vec.z;
     }
 
@@ -144,6 +150,10 @@ public class MessageUtil {
     }
 
     public @NotNull Component miniMessage(@NotNull String string) {
+        return miniMessage(string, TagResolver.empty());
+    }
+
+    public @NotNull Component miniMessage(@NotNull String string, TagResolver... resolvers) {
         string = string.replace("%prefix%", GrimAPI.INSTANCE.getConfigManager().getConfig().getStringElse("prefix", "&bGrim &8»"));
 
         // hex codes
@@ -181,7 +191,12 @@ public class MessageUtil {
                 .replace("§n", "<underlined>")
                 .replace("§o", "<italic>");
 
-        return MiniMessage.miniMessage().deserialize(string).compact();
+        return MiniMessage.miniMessage().deserialize(string, resolvers).compact();
+    }
+
+    @Contract("null -> !null; !null -> !null")
+    public @NotNull String miniMessageSafe(@Nullable String string) {
+        return string == null ? "" : MiniMessage.miniMessage().escapeTags(string);
     }
 
     public Component getParsedComponent(Sender sender, String key, String fallbackText) {

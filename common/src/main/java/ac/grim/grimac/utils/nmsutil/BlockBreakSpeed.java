@@ -54,9 +54,22 @@ public class BlockBreakSpeed {
             StateTypes.ENDER_CHEST
     );
 
+    // another temporary hardcode for the same reasons as above; see https://github.com/GrimAnticheat/Grim/issues/2574
+    private static final Set<StateType> HARVESTABLE_TYPES_1_21 = Sets.newHashSet(
+            StateTypes.VAULT
+    );
+
     private static final boolean SERVER_USES_COMPONENTS_AND_RULES = PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_20_5);
 
-    record ToolSpeedData(float speedMultiplier, boolean isCorrectToolForDrop) {
+    record ToolSpeedData(float speedMultiplier, boolean isCorrectToolForDrop) {}
+
+    public static boolean couldInstantlyBreakBlock(GrimPlayer player, StateType block) {
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = player.inventory.inventory.getHotbar(i);
+            if (getBlockDamage(player, stack, block) >= 1) return true;
+        }
+
+        return false;
     }
 
     public static double getBlockDamage(GrimPlayer player, WrappedBlockState block) {
@@ -104,7 +117,9 @@ public class BlockBreakSpeed {
 
         final boolean canHarvest = !block.isRequiresCorrectTool() || toolSpeedData.isCorrectToolForDrop
                 // temporary hardcode to workaround PE bug https://github.com/retrooper/packetevents/issues/1217; see https://github.com/GrimAnticheat/Grim/issues/2091
-                || player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_4) && HARVESTABLE_TYPES_1_21_4.contains(block);
+                || player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_4) && HARVESTABLE_TYPES_1_21_4.contains(block)
+                // same reason as above; see https://github.com/GrimAnticheat/Grim/issues/2574
+                || player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21) && HARVESTABLE_TYPES_1_21.contains(block);
 
         float damage = speedMultiplier / blockHardness;
         damage /= canHarvest ? 30F : 100F;
@@ -135,7 +150,9 @@ public class BlockBreakSpeed {
 
         OptionalInt miningFatigue = player.compensatedEntities.getPotionLevelForSelfPlayer(PotionTypes.MINING_FATIGUE);
 
-        if (miningFatigue.isPresent()) {
+        if (miningFatigue.isPresent() && player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_26_3)) {
+            speedMultiplier *= (float) Math.pow(0.3, miningFatigue.getAsInt() + 1);
+        } else if (miningFatigue.isPresent()) {
             switch (miningFatigue.getAsInt()) {
                 case 0:
                     speedMultiplier *= 0.3f;
@@ -153,7 +170,7 @@ public class BlockBreakSpeed {
 
         speedMultiplier *= (float) player.compensatedEntities.self.getAttributeValue(Attributes.BLOCK_BREAK_SPEED);
 
-        if (player.fluidOnEyes == FluidTag.WATER) {
+        if (player.isEyeInFluid(FluidTag.WATER)) {
             if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21) && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21)) {
                 speedMultiplier *= (float) player.compensatedEntities.self.getAttributeValue(Attributes.SUBMERGED_MINING_SPEED);
             } else {
@@ -299,6 +316,4 @@ public class BlockBreakSpeed {
         //
         return new ToolSpeedData(speedMultiplier, isCorrectToolForDrop);
     }
-
-
 }

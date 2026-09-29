@@ -1,23 +1,15 @@
 package ac.grim.grimac.utils.data;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import org.jetbrains.annotations.Contract;
 
-@Getter
-@RequiredArgsConstructor
-@EqualsAndHashCode
-@ToString
-public final class RotationData {
-    private final float yaw;
-    private final float pitch;
-    private final int transaction;
-    private boolean isAccepted;
+public record RotationData(
+        float yaw, float pitch,
+        boolean relativeYaw, boolean relativePitch,
+        int transaction) {
 
-    @Contract(mutates = "this")
-    public void accept() {
-        this.isAccepted = true;
+    @Contract(pure = true)
+    public boolean allowRotation(float yaw, float pitch) {
+        // TODO: pitch bounds?
+        return (this.relativeYaw || this.yaw == yaw) && (this.relativePitch || this.pitch == pitch);
     }
 }
