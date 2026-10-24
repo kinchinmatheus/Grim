@@ -59,15 +59,15 @@ public class PacketPlayerJoinQuit extends PacketListenerAbstract {
 
         PlayerToggleStore toggles = GrimAPI.INSTANCE.getDataStoreLifecycle().playerToggleStore();
         applyToggle(platformPlayer, toggles, PlayerToggleStore.KEY_ALERTS,
-                "grim.alerts", "grim.alerts.enable-on-join", "grim.alerts.enable-on-join.silent",
+                "grim.alerts", "alerts.enable-on-join", "grim.alerts.enable-on-join", "grim.alerts.enable-on-join.silent",
                 (p, silent) -> GrimAPI.INSTANCE.getAlertManager().toggleAlerts(p, silent),
                 (p, value) -> GrimAPI.INSTANCE.getAlertManager().setAlertsEnabled(p, value, true));
         applyToggle(platformPlayer, toggles, PlayerToggleStore.KEY_VERBOSE,
-                "grim.verbose", "grim.verbose.enable-on-join", "grim.verbose.enable-on-join.silent",
+                "grim.verbose", "verbose.enable-on-join", "grim.verbose.enable-on-join", "grim.verbose.enable-on-join.silent",
                 (p, silent) -> GrimAPI.INSTANCE.getAlertManager().toggleVerbose(p, silent),
                 (p, value) -> GrimAPI.INSTANCE.getAlertManager().setVerboseEnabled(p, value, true));
         applyToggle(platformPlayer, toggles, PlayerToggleStore.KEY_BRANDS,
-                "grim.brand", "grim.brand.enable-on-join", "grim.brand.enable-on-join.silent",
+                "grim.brand", "brand.enable-on-join", "grim.brand.enable-on-join", "grim.brand.enable-on-join.silent",
                 (p, silent) -> GrimAPI.INSTANCE.getAlertManager().toggleBrands(p, silent),
                 (p, value) -> GrimAPI.INSTANCE.getAlertManager().setBrandsEnabled(p, value, true));
 
@@ -90,6 +90,9 @@ public class PacketPlayerJoinQuit extends PacketListenerAbstract {
      * keeps working without the v1 datastore.
      *
      * @param permTogglePath  permission required to USE the toggle at all
+     * @param configEnableOnJoin config key that must be true for permEnableOnJoin
+     *                        to apply; keeps join toggles off on servers whose
+     *                        permission system grants every node through '*'
      * @param permEnableOnJoin permission whose default is "on at login"
      * @param permSilentJoin  permission that suppresses the toggle message
      * @param toggle          legacy fallback path (with on/off flip behaviour)
@@ -100,6 +103,7 @@ public class PacketPlayerJoinQuit extends PacketListenerAbstract {
                                     @NotNull PlayerToggleStore toggles,
                                     @NotNull String key,
                                     @NotNull String permTogglePath,
+                                    @NotNull String configEnableOnJoin,
                                     @NotNull String permEnableOnJoin,
                                     @NotNull String permSilentJoin,
                                     @NotNull ObjBooleanConsumer<PlatformPlayer> toggle,
@@ -122,7 +126,8 @@ public class PacketPlayerJoinQuit extends PacketListenerAbstract {
         // prefetch hasn't completed). Fall back to the permission-default
         // policy and persist the choice so it sticks. NOOP store treats both
         // applyPermissionDefault calls as silent no-ops.
-        boolean enableOnJoin = platformPlayer.hasPermission(permEnableOnJoin);
+        boolean enableOnJoin = GrimAPI.INSTANCE.getConfigManager().getConfig().getBooleanElse(configEnableOnJoin, false)
+                && platformPlayer.hasPermission(permEnableOnJoin);
         boolean silent = platformPlayer.hasPermission(permSilentJoin);
         if (enableOnJoin) {
             toggle.accept(platformPlayer, silent);
