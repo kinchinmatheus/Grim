@@ -15,12 +15,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package ac.grim.grimac.checks.impl.combat;
 
+import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.api.config.ConfigManager;
 import ac.grim.grimac.api.storage.verbose.Verbose;
 import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.CheckData;
 import ac.grim.grimac.checks.type.PacketReceiveListener;
 import ac.grim.grimac.player.GrimPlayer;
+import ac.grim.grimac.utils.anticheat.MessageUtil;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
 import ac.grim.grimac.utils.data.packetentity.PacketEntity;
 import ac.grim.grimac.utils.data.packetentity.PacketEntitySizeable;
@@ -53,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 // You may not copy the check unless you are licensed under GPL
 @CheckData(name = "Reach", stableKey = "grim.combat.reach", description = "Attacked an entity from too far away")
@@ -64,12 +67,18 @@ public class Reach extends Check implements PacketReceiveListener {
             EntityTypes.CHEST_BOAT,
             EntityTypes.SHULKER);
     private static final CheckResult NONE = new CheckResult(ResultType.NONE, 0, 0, false);
+    private static final String DEFAULT_NERF_MESSAGE = "%prefix% &f%player% &7has reach limited to &f%reach% &7for &f%seconds%s &8(Reach VL %vl%)";
     // Only one flag per reach attack, per entity, per tick.
     // We store position because lastX isn't reliable on teleports.
     private final Int2ObjectMap<InteractionData> playerAttackQueue = new Int2ObjectOpenHashMap<>();
     private boolean cancelImpossibleHits;
     private double threshold;
     private double cancelBuffer; // For the next 4 hits after using reach, we aggressively cancel reach
+    // Players that keep flagging get every hit capped at nerfMaxReach until nerfExpiresAtMillis
+    private double nerfVL; // -1 disables the nerf
+    private double nerfMaxReach;
+    private long nerfDurationMillis;
+    private long nerfExpiresAtMillis;
 
     public Reach(GrimPlayer player) {
         super(player);
@@ -213,6 +222,10 @@ public class Reach extends Check implements PacketReceiveListener {
             return false;
         if (player.inVehicle()) return false;
 
+        if (isNerfActive()) {
+            return isBeyondNerfReach(reachEntity, hasAttackRange, itemMaxReach, itemHitboxMargin);
+        }
+
         // Filter out what we assume to be cheats
         if (cancelBuffer != 0) {
             CheckResult result = checkReach(reachEntity, player.x, player.y, player.z, hasAttackRange, itemMaxReach, itemHitboxMargin, null, true);
@@ -233,15 +246,18 @@ public class Reach extends Check implements PacketReceiveListener {
             InteractionData interactionData = attack.getValue();
             CheckResult result = checkReach(reachEntity, interactionData.x, interactionData.y, interactionData.z, interactionData.hasAttackRange, interactionData.maxReach, interactionData.hitboxMargin, interactionData.attackRangeMovement, false);
             switch (result.type()) {
-                case REACH -> flag(
-                        V.write(verbose()).f64(result.minDistance()).uint(Math.max(0, reachEntity.getType().getId(PacketEvents.getAPI().getServerManager().getVersion().toClientVersion()))),
-                        () -> {
-                            String added = ", type=" + reachEntity.getType().getName().getKey();
-                            if (reachEntity instanceof PacketEntitySizeable sizeable) {
-                                added += ", size=" + sizeable.size;
-                            }
-                            return result.verbose() + added;
-                        });
+                case REACH -> {
+                    boolean flagged = flag(
+                            V.write(verbose()).f64(result.minDistance()).uint(Math.max(0, reachEntity.getType().getId(PacketEvents.getAPI().getServerManager().getVersion().toClientVersion()))),
+                            () -> {
+                                String added = ", type=" + reachEntity.getType().getName().getKey();
+                                if (reachEntity instanceof PacketEntitySizeable sizeable) {
+                                    added += ", size=" + sizeable.size;
+                                }
+                                return result.verbose() + added;
+                            });
+                    if (flagged) renewNerfIfAboveVL();
+                }
                 case HITBOX -> {
                     String added = "type=" + reachEntity.getType().getName().getKey();
                     if (reachEntity instanceof PacketEntitySizeable sizeable) {
@@ -261,6 +277,26 @@ public class Reach extends Check implements PacketReceiveListener {
 
         double movementAllowance = attackRangeMovement == null ? 0 : getAttackRangeMovementAllowance(attackRangeMovement);
         double maxReach = applyReachModifiers(targetBox, hasAttackRange, itemMaxReach, itemHitboxMargin, !player.packetStateData.didLastLastMovementIncludePosition) + movementAllowance;
+        double minDistance = getMinRayDistance(targetBox, x, y, z, maxReach, isPrediction);
+
+        // if the entity is not exempt and the entity is alive
+        if ((!blacklisted.contains(reachEntity.getType()) && reachEntity.isLivingEntity) || reachEntity.getType() == EntityTypes.END_CRYSTAL) {
+            if (minDistance == Double.MAX_VALUE) {
+                cancelBuffer = 1;
+                return new CheckResult(ResultType.HITBOX, 0, 0, false);
+            } else if (minDistance > maxReach) {
+                cancelBuffer = 1;
+                return new CheckResult(ResultType.REACH, minDistance, movementAllowance, attackRangeMovement != null);
+            } else {
+                cancelBuffer = Math.max(0, cancelBuffer - 0.25);
+            }
+        }
+
+        return NONE;
+    }
+
+    // Shortest eye to box distance along the possible look rays, Double.MAX_VALUE when every ray misses
+    private double getMinRayDistance(SimpleCollisionBox targetBox, double x, double y, double z, double maxReach, boolean isPrediction) {
         double minDistance = Double.MAX_VALUE;
 
         // https://bugs.mojang.com/browse/MC-67665
@@ -303,20 +339,33 @@ public class Reach extends Check implements PacketReceiveListener {
             }
         }
 
-        // if the entity is not exempt and the entity is alive
-        if ((!blacklisted.contains(reachEntity.getType()) && reachEntity.isLivingEntity) || reachEntity.getType() == EntityTypes.END_CRYSTAL) {
-            if (minDistance == Double.MAX_VALUE) {
-                cancelBuffer = 1;
-                return new CheckResult(ResultType.HITBOX, 0, 0, false);
-            } else if (minDistance > maxReach) {
-                cancelBuffer = 1;
-                return new CheckResult(ResultType.REACH, minDistance, movementAllowance, attackRangeMovement != null);
-            } else {
-                cancelBuffer = Math.max(0, cancelBuffer - 0.25);
-            }
-        }
+        return minDistance;
+    }
 
-        return NONE;
+    private boolean isNerfActive() {
+        return nerfVL >= 0 && System.currentTimeMillis() < nerfExpiresAtMillis;
+    }
+
+    // Uses the look known when the attack arrives, like the strict cancel path; a ray that misses counts as beyond
+    private boolean isBeyondNerfReach(PacketEntity reachEntity, boolean hasAttackRange, float itemMaxReach, float itemHitboxMargin) {
+        SimpleCollisionBox targetBox = getTargetBox(reachEntity);
+        double maxReach = Math.min(nerfMaxReach, applyReachModifiers(targetBox, hasAttackRange, itemMaxReach, itemHitboxMargin, !player.packetStateData.didLastMovementIncludePosition));
+        return getMinRayDistance(targetBox, player.x, player.y, player.z, maxReach, true) > maxReach;
+    }
+
+    // Every Reach flag at or above nerfVL starts the nerf or pushes its end back; staff only hear about the start
+    private void renewNerfIfAboveVL() {
+        if (nerfVL < 0 || violations < nerfVL) return;
+
+        boolean alreadyActive = isNerfActive();
+        nerfExpiresAtMillis = System.currentTimeMillis() + nerfDurationMillis;
+        if (alreadyActive) return;
+
+        String message = GrimAPI.INSTANCE.getConfigManager().getConfig().getStringElse("reach-nerf-format", DEFAULT_NERF_MESSAGE)
+                .replace("%reach%", String.format(Locale.ROOT, "%.2f", nerfMaxReach))
+                .replace("%seconds%", Long.toString(nerfDurationMillis / 1000))
+                .replace("%vl%", Integer.toString((int) violations));
+        GrimAPI.INSTANCE.getAlertManager().sendAlert(MessageUtil.replacePlaceholders(player, MessageUtil.miniMessage(message)), null);
     }
 
     private SimpleCollisionBox getTargetBox(PacketEntity reachEntity) {
@@ -375,6 +424,9 @@ public class Reach extends Check implements PacketReceiveListener {
     public void onReload(@NotNull ConfigManager config) {
         this.cancelImpossibleHits = config.getBooleanElse("Reach.block-impossible-hits", true);
         this.threshold = config.getDoubleElse("Reach.threshold", 0.0005);
+        this.nerfVL = config.getDoubleElse("Reach.nerf-vl", -1);
+        this.nerfMaxReach = config.getDoubleElse("Reach.nerf-max-reach", 2.8);
+        this.nerfDurationMillis = (long) (config.getDoubleElse("Reach.nerf-duration-seconds", 10) * 1000);
     }
 
     private enum ResultType {

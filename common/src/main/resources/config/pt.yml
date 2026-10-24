@@ -185,6 +185,15 @@ Reach:
     # Deixando-o desabilitado, continuará detectando trapaceiros e não irá causar falsos positivos.
     # A menos que estiver em um servidor focado em PvP, esse pacote adicional não é recomendado.
     enable-post-packet: false
+    # Limita os hits de jogadores que continuam usando reach: durante o nerf, hits além de nerf-max-reach são cancelados.
+    # O nerf começa numa violação de Reach quando as violações de Reach do jogador chegam a nerf-vl, e dura
+    # nerf-duration-seconds depois da última violação de Reach. A staff com alertas ativos é avisada quando ele começa.
+    # Depende de block-impossible-hits. As violações de Reach só zeram quando o jogador reconecta.
+    # -1 para desabilitar
+    nerf-vl: -1
+    # Alcance máximo em blocos durante o nerf. Nunca aumenta o alcance normal.
+    nerf-max-reach: 2.8
+    nerf-duration-seconds: 10
 
 exploit:
     # Você pode ganhar altas velocidades se pular correndo com uma elytra, previne isso de ocorrer quando definido falso.

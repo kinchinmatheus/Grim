@@ -181,6 +181,15 @@ Reach:
     # Leaving this disabled will still catch cheaters and will not cause false positives
     # Unless you are a 1.8 PvP focused server, this additional packet is not recommended
     enable-post-packet: false
+    # Limits the hits of players that keep using reach: while nerfed, hits beyond nerf-max-reach are cancelled.
+    # The nerf starts on a Reach flag once the player's Reach violations reach nerf-vl, and lasts
+    # nerf-duration-seconds after the last Reach flag. Staff with alerts enabled are told when it starts.
+    # Needs block-impossible-hits. Reach violations only reset when the player reconnects.
+    # -1 to disable
+    nerf-vl: -1
+    # Maximum reach in blocks while nerfed. It never raises the normal reach.
+    nerf-max-reach: 2.8
+    nerf-duration-seconds: 10
 
 exploit:
     # You can gain high speeds when sprint jumping with an elytra, this prevents the exploit when set to false
