@@ -6,7 +6,6 @@ import ac.grim.grimac.api.GrimUser;
 import ac.grim.grimac.api.PacketWorld;
 import ac.grim.grimac.api.config.ConfigManager;
 import ac.grim.grimac.api.handler.ResyncHandler;
-import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.impl.aim.processor.AimProcessor;
 import ac.grim.grimac.checks.impl.misc.ClientBrand;
 import ac.grim.grimac.checks.impl.misc.TransactionOrder;
