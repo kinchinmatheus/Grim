@@ -3,6 +3,7 @@ package ac.grim.grimac.events.packets;
 import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.checks.impl.badpackets.BadPacketsB;
 import ac.grim.grimac.player.GrimPlayer;
+import ac.grim.grimac.predictionengine.PlayerBaseTick;
 import ac.grim.grimac.utils.anticheat.update.*;
 import ac.grim.grimac.utils.blockplace.BlockPlaceResult;
 import ac.grim.grimac.utils.blockplace.ConsumesBlockPlace;
@@ -407,7 +408,7 @@ public class CheckManagerListener extends PacketListenerAbstract {
             }
 
             Vector3d position = VectorUtils.clampVector(new Vector3d(teleportConfirm.getX(), teleportConfirm.getY(), teleportConfirm.getZ()));
-            teleportData = player.getSetbackTeleportUtil().checkTeleportQueue(position.getX(), position.getY(), position.getZ(), teleportConfirm.getYaw(), teleportConfirm.getPitch(), teleportConfirm.getTeleportId());
+            teleportData = player.getSetbackTeleportUtil().checkTeleportQueue(position.getX(), position.getY(), position.getZ(), teleportConfirm.getYaw(), teleportConfirm.getPitch());
             player.packetStateData.lastPacketWasTeleport = teleportData.isTeleport();
         }
 
@@ -584,6 +585,16 @@ public class CheckManagerListener extends PacketListenerAbstract {
             player.packetStateData.cancelDuplicatePacket = false;
         }
 
+        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType()) && player.packetStateData.lastPacketWasTeleport) {
+            WrapperPlayClientPlayerFlying flying = new WrapperPlayClientPlayerFlying(event);
+            SetBackData setback = teleportData.getSetback();
+
+            if (flying.hasPositionChanged() && setback != null && !setback.isPlugin() && !setback.isVehicle()) {
+                flying.setOnGround(setback.isOnGround());
+                event.markForReEncode(true);
+            }
+        }
+
         if (event.getPacketType() == PacketType.Play.Client.CLIENT_TICK_END && player.supportsEndTick()) {
             player.serverOpenedInventoryThisTick = false;
             if (!player.packetStateData.didSendMovementBeforeTickEnd) {
@@ -594,6 +605,9 @@ public class CheckManagerListener extends PacketListenerAbstract {
                 // Track dash cooldown
                 if (!player.inVehicle()) {
                     player.dashableEntities.tick();
+                    // The client still updates its pose on ticks it sends no movement for, so a crouch
+                    // released while standing still has to reach the pose here or the next move uses a stale hitbox
+                    PlayerBaseTick.updatePlayerPose(player);
                 }
             }
             player.packetStateData.didSendMovementBeforeTickEnd = false;
