@@ -474,6 +474,8 @@ public final class BoundingBoxSize {
         else if (type == EntityTypes.HAPPY_GHAST) return 0.2375f;
         else if (type == EntityTypes.DOLPHIN) return 0.65f;
         else if (type == EntityTypes.ARMADILLO) return 0.6f;
+        // small armor stands only got a smaller hitbox in 1.11, older clients still hit them with the full size one
+        else if (type == EntityTypes.ARMOR_STAND && player.getClientVersion().isOlderThan(ClientVersion.V_1_11)) return 1f;
         else if (player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_26_2) && (type == EntityTypes.HOGLIN || type == EntityTypes.ZOGLIN || type == EntityTypes.FOX || type == EntityTypes.GOAT || EntityTypes.isTypeInstanceOf(type, EntityTypes.CAMEL))) return 1f;
         else if (type == EntityTypes.GOAT && player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_26_1)) return 0.55f;
         else if (EntityTypes.isTypeInstanceOf(type, EntityTypes.CAMEL)) return player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_26_1) ? 0.6f : 0.45f;
