@@ -7,6 +7,7 @@ import ac.grim.grimac.api.common.BasicReloadable;
 import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.impl.aim.AimDuplicateLook;
 import ac.grim.grimac.checks.impl.aim.AimModulo360;
+import ac.grim.grimac.checks.impl.aim.RotationSpeedCap;
 import ac.grim.grimac.checks.impl.aim.processor.AimProcessor;
 import ac.grim.grimac.checks.impl.badpackets.*;
 import ac.grim.grimac.checks.impl.breaking.*;
@@ -160,6 +161,7 @@ public class CheckManager implements BasicReloadable {
                 .put(AimProcessor.class, new AimProcessor(player))
                 .put(AimModulo360.class, new AimModulo360(player))
                 .put(AimDuplicateLook.class, new AimDuplicateLook(player))
+                .put(RotationSpeedCap.class, new RotationSpeedCap(player))
                 .put(VehiclePredictionRunner.class, new VehiclePredictionRunner(player))
 
                 .put(NegativeTimer.class, new NegativeTimer(player))
