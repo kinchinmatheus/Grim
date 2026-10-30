@@ -7,7 +7,6 @@ import ac.grim.grimac.checks.impl.aim.processor.AimProcessor;
 import ac.grim.grimac.checks.type.PacketReceiveListener;
 import ac.grim.grimac.checks.type.RotationListener;
 import ac.grim.grimac.player.GrimPlayer;
-import ac.grim.grimac.utils.anticheat.LogUtil;
 import ac.grim.grimac.utils.anticheat.update.RotationUpdate;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -16,11 +15,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientIn
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
 import java.util.Arrays;
-import java.util.Locale;
 
-// Shadow check while its false positive rate is measured: it records flags in Grim's history and in a console line,
-// and is meant to stay out of punishments.yml and flamemc-core's anticheat.conf, so it never alerts, cancels or bans.
-//
 // Aura rotation managers move each axis by at most a near constant angle per tick. One measured silent aura moves
 // 3.71 degrees times its aim speed setting, within a few percent, whatever the mouse sensitivity. While the target
 // needs a faster turn, yaw and pitch speeds pile up just under that cap, with few samples right above it. The aura's
@@ -29,7 +24,6 @@ import java.util.Locale;
 @CheckData(name = "AuraRotation", stableKey = "grim.aim.rotation_speed_cap", description = "Turned at a capped speed while fighting")
 public class RotationSpeedCap extends Check implements RotationListener, PacketReceiveListener {
     private static final Verbose V = Verbose.of("speed={f64:%.2f}, window={uint}, beyond={uint}, below={uint}, above={uint}");
-    private static final String SHADOW_LOG_PREFIX = "[AuraShadow] ";
     private static final int COMBAT_TICKS = 20;
     private static final double MIN_TURN_DEGREES = 1.5;
     // Pitch clamps at 90 degrees, which cuts a turn short
@@ -145,16 +139,9 @@ public class RotationSpeedCap extends Check implements RotationListener, PacketR
                     && inWindow >= MIN_CEILING_SHARE * (inWindow + beyond)
                     && inWindow >= MIN_BELOW_RATIO * Math.max(1, belowBand)
                     && inWindow >= MIN_ABOVE_RATIO * Math.max(1, aboveBand)) {
-                flagCap(windowStart, inWindow, beyond, belowBand, aboveBand);
+                flag(V.write(verbose()).f64(windowStart).uint(inWindow).uint(beyond).uint(belowBand).uint(aboveBand));
                 return;
             }
-        }
-    }
-
-    private void flagCap(double speed, int inWindow, int beyond, int belowBand, int aboveBand) {
-        String details = String.format(Locale.ROOT, "speed=%.2f, window=%d, beyond=%d, below=%d, above=%d", speed, inWindow, beyond, belowBand, aboveBand);
-        if (flag(V.write(verbose()).f64(speed).uint(inWindow).uint(beyond).uint(belowBand).uint(aboveBand), () -> details)) {
-            LogUtil.info(SHADOW_LOG_PREFIX + player.getName() + " failed " + getCheckName() + " (x" + (int) violations + ") " + details);
         }
     }
 }

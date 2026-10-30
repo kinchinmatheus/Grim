@@ -39,9 +39,6 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-// Shadow check while its false positive rate is measured: it records flags in Grim's history and in a console line,
-// and is meant to stay out of punishments.yml and flamemc-core's anticheat.conf, so it never alerts, cancels or bans.
-//
 // Only players that RotationSpeedCap or AttackCadence keep flagging are tested. While they fight and look at their
 // target, a fake armored player is shown to them alone, behind or beside them on the side away from the target, and
 // closer than it. An aura picks the closest target every tick: on the next tick its sent look starts turning to the
@@ -50,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 @CheckData(name = "AuraBot", stableKey = "grim.combat.aura_bait", description = "Turned toward a fake player out of view")
 public class AuraBait extends Check implements PacketReceiveListener {
     private static final Verbose V = Verbose.of("reactions={uint}, baits={uint}");
-    private static final String SHADOW_LOG_PREFIX = "[AuraShadow] ";
+    private static final String BAIT_LOG_PREFIX = "[AuraBot] ";
     private static final int COMBAT_TICKS = 20;
 
     private static final long SUSPICION_WINDOW_MS = TimeUnit.MINUTES.toMillis(3);
@@ -318,20 +315,14 @@ public class AuraBait extends Check implements PacketReceiveListener {
             if (result) reactions++;
         }
         if (reactions >= MIN_REACTIONS) {
-            flagReactions(reactions, results.size());
+            flag(V.write(verbose()).uint(reactions).uint(results.size()));
             results.clear();
         }
     }
 
-    private void flagReactions(int reactions, int baits) {
-        String details = "reactions=" + reactions + ", baits=" + baits;
-        if (flag(V.write(verbose()).uint(reactions).uint(baits), () -> details)) {
-            LogUtil.info(SHADOW_LOG_PREFIX + player.getName() + " failed " + getCheckName() + " (x" + (int) violations + ") " + details);
-        }
-    }
-
+    // Every bait's measurements, to tune the reaction thresholds with real players
     private void logBait(String details) {
-        LogUtil.info(SHADOW_LOG_PREFIX + player.getName() + " bait " + baitCount + ": " + details);
+        LogUtil.info(BAIT_LOG_PREFIX + player.getName() + " bait " + baitCount + ": " + details);
     }
 
     private Vector3d baitPosition() {
