@@ -26,7 +26,7 @@ import java.util.Locale;
 // needs a faster turn, yaw and pitch speeds pile up just under that cap, with few samples right above it. The aura's
 // release back to the camera adds larger jumps, so only part of the samples beyond the cap has to stay low.
 // Human turn speeds spread out and taper off.
-@CheckData(name = "RotationSpeedCap", stableKey = "grim.aim.rotation_speed_cap", description = "Turned at a capped speed while fighting")
+@CheckData(name = "AuraRotation", stableKey = "grim.aim.rotation_speed_cap", description = "Turned at a capped speed while fighting")
 public class RotationSpeedCap extends Check implements RotationListener, PacketReceiveListener {
     private static final Verbose V = Verbose.of("speed={f64:%.2f}, window={uint}, beyond={uint}, below={uint}, above={uint}");
     private static final String SHADOW_LOG_PREFIX = "[AuraShadow] ";

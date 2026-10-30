@@ -17,7 +17,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 //
 // Auras attack on a schedule; at 20 attacks per second that is exactly one attack in every client tick.
 // Fast human clicking lands zero or several clicks in some ticks.
-@CheckData(name = "AttackCadence", stableKey = "grim.combat.attack_cadence", description = "Attacked exactly once per tick for too many ticks in a row")
+@CheckData(name = "AuraClick", stableKey = "grim.combat.attack_cadence", description = "Attacked exactly once per tick for too many ticks in a row")
 public class AttackCadence extends Check implements PacketReceiveListener {
     private static final Verbose V = Verbose.of("ticks={uint}");
     private static final String SHADOW_LOG_PREFIX = "[AuraShadow] ";
