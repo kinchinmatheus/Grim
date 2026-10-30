@@ -162,6 +162,7 @@ public class CheckManager implements BasicReloadable {
                 .put(AimModulo360.class, new AimModulo360(player))
                 .put(AimDuplicateLook.class, new AimDuplicateLook(player))
                 .put(RotationSpeedCap.class, new RotationSpeedCap(player))
+                .put(AuraBait.class, new AuraBait(player))
                 .put(VehiclePredictionRunner.class, new VehiclePredictionRunner(player))
 
                 .put(NegativeTimer.class, new NegativeTimer(player))
