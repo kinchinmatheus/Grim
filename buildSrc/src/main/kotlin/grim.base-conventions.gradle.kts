@@ -25,7 +25,6 @@ spotless {
         indentWithSpaces(4)
         removeUnusedImports()
         trimTrailingWhitespace()
-        targetExclude("build/generated/**/*")
     }
 
     kotlinGradle {
