@@ -56,10 +56,16 @@ public class PacketWorldReaderEight extends BasePacketWorldReader {
         BitSet mask = BitSet.valueOf(new long[]{(long) wrapper.readUnsignedShort()});
         int size = wrapper.readVarInt(); // Ignore size
 
-        final Chunk_v1_9[] chunks = new Chunk_v1_9[16];
-        this.readChunk((ByteBuf) event.getByteBuf(), chunks, mask);
+        // 1.8 has no unload packet: the client unloads a full chunk that has no sections (ViaVersion maps it to UNLOAD_CHUNK)
+        // Caching it as air would simulate normal gravity while the client moves with its unloaded chunk physics
+        if (groundUp && mask.isEmpty()) {
+            this.unloadChunk(player, chunkX, chunkZ);
+        } else {
+            final Chunk_v1_9[] chunks = new Chunk_v1_9[16];
+            this.readChunk((ByteBuf) event.getByteBuf(), chunks, mask);
 
-        this.addChunkToCache(event, player, chunks, groundUp, chunkX, chunkZ, null);
+            this.addChunkToCache(event, player, chunks, groundUp, chunkX, chunkZ, null);
+        }
 
         event.setLastUsedWrapper(null); // Make sure this incomplete packet isn't sent
     }
