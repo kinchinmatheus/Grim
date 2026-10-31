@@ -213,9 +213,9 @@ public class CheckManager implements BasicReloadable {
 
                 .put(InvalidPlaceCursor.class, new InvalidPlaceCursor(player))
                 .put(InvalidPlaceFace.class, new InvalidPlaceFace(player))
+                .put(FastPlace.class, new FastPlace(player)) // Before AirLiquidPlace, which skips blocks it cancelled
                 .put(AirLiquidPlace.class, new AirLiquidPlace(player))
                 .put(MultiPlace.class, new MultiPlace(player))
-                .put(FastPlace.class, new FastPlace(player))
                 .put(MultiActionsF.class, new MultiActionsF(player))
                 .put(MultiActionsG.class, new MultiActionsG(player))
                 .put(BadPacketsH.class, new BadPacketsH(player))

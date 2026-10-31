@@ -57,6 +57,9 @@ public class AirLiquidPlace extends BlockPlaceCheck implements BlockPlaceListene
     @Override
     public void onBlockPlace(final BlockPlace place) {
         if (player.gamemode == GameMode.CREATIVE) return;
+        // The client keeps showing a block that a check cancelled until the resync arrives, so the next blocks are
+        // placed against what is air here. While they get cancelled too, flagging them only repeats that cancel.
+        if (place.isCancelled()) return;
 
         Vector3i blockPos = place.position;
         StateType placeAgainst = player.compensatedWorld.getBlockType(blockPos.getX(), blockPos.getY(), blockPos.getZ());
