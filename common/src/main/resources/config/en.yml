@@ -106,11 +106,14 @@ PositionPlace:
 RotationPlace:
     cancelvl: 5
 
-# Cancels blocks once the player has right-clicked exactly once per client tick for this many ticks in a row
-# (20 ticks = 1 second). Holding right click repeats every 4 ticks; FastPlace right-clicks in every tick.
-# Fast clickers sometimes lose blocks with low values, drag clicking almost never does.
+# Holding right click repeats every 4 ticks (20 ticks = 1 second); FastPlace right-clicks every 1, 2 or 3 ticks.
 FastPlace:
+    # Cancels blocks once the player has right-clicked exactly once per tick for this many ticks in a row.
+    # Fast clickers sometimes lose blocks with low values, drag clicking almost never does.
     cancel-after-ticks: 4
+    # Cancels blocks and flags once the player has right-clicked this many times in a row exactly every 2 ticks,
+    # or exactly every 3 ticks. That is as fast as normal clicking, so keep it well above 10.
+    slow-run-clicks: 20
 
 # Prediction-based no slow check
 # Grim accounts for buggy netcode here... hard to false even when spamming right click and offhand button

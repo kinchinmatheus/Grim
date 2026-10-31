@@ -107,11 +107,14 @@ PositionPlace:
 RotationPlace:
     cancelvl: 5
 
-# Cancela blocos depois que o jogador deu exatamente 1 clique direito por tick do cliente nessa quantidade de ticks
-# seguidos (20 ticks = 1 segundo). Segurar o botão direito repete a cada 4 ticks; o FastPlace clica em todo tick.
-# Com valores baixos, quem clica rápido às vezes perde blocos; quem faz drag quase nunca.
+# Segurar o botão direito repete o clique a cada 4 ticks (20 ticks = 1 segundo); o FastPlace clica a cada 1, 2 ou 3 ticks.
 FastPlace:
+    # Cancela blocos depois que o jogador deu exatamente 1 clique direito por tick nessa quantidade de ticks seguidos.
+    # Com valores baixos, quem clica rápido às vezes perde blocos; quem faz drag quase nunca.
     cancel-after-ticks: 4
+    # Cancela blocos e dá flag depois dessa quantidade de cliques direitos seguidos exatamente a cada 2 ticks,
+    # ou exatamente a cada 3 ticks. Isso é a velocidade de um clique normal, então mantenha bem acima de 10.
+    slow-run-clicks: 20
 
 # Verificação de NoSlow por simulação.
 # Grim considera erros no netcode. Difícil de gerar falsos positivos, até mesmo spamando o blotão direito e a offhand.
