@@ -107,10 +107,11 @@ PositionPlace:
 RotationPlace:
     cancelvl: 5
 
-# Cancela blocos colocados em mais do que essa quantidade de ticks seguidos do cliente (20 ticks = 1 segundo).
-# Segurar o botão direito coloca a cada 4 ticks; FastPlace, drag e butterfly conseguem colocar em todo tick.
+# Cancela blocos depois que o jogador deu exatamente 1 clique direito por tick do cliente nessa quantidade de ticks
+# seguidos (20 ticks = 1 segundo). Segurar o botão direito repete a cada 4 ticks; o FastPlace clica em todo tick.
+# Com valores baixos, quem clica rápido às vezes perde blocos; quem faz drag quase nunca.
 FastPlace:
-    max-placement-ticks: 4
+    cancel-after-ticks: 4
 
 # Verificação de NoSlow por simulação.
 # Grim considera erros no netcode. Difícil de gerar falsos positivos, até mesmo spamando o blotão direito e a offhand.

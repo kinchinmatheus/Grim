@@ -106,10 +106,11 @@ PositionPlace:
 RotationPlace:
     cancelvl: 5
 
-# Cancels blocks placed in more than this many client ticks in a row (20 ticks = 1 second).
-# Holding right click places every 4 ticks; FastPlace, drag and butterfly clicking can place in every tick.
+# Cancels blocks once the player has right-clicked exactly once per client tick for this many ticks in a row
+# (20 ticks = 1 second). Holding right click repeats every 4 ticks; FastPlace right-clicks in every tick.
+# Fast clickers sometimes lose blocks with low values, drag clicking almost never does.
 FastPlace:
-    max-placement-ticks: 4
+    cancel-after-ticks: 4
 
 # Prediction-based no slow check
 # Grim accounts for buggy netcode here... hard to false even when spamming right click and offhand button
