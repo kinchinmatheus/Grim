@@ -215,6 +215,7 @@ public class CheckManager implements BasicReloadable {
                 .put(InvalidPlaceFace.class, new InvalidPlaceFace(player))
                 .put(AirLiquidPlace.class, new AirLiquidPlace(player))
                 .put(MultiPlace.class, new MultiPlace(player))
+                .put(FastPlace.class, new FastPlace(player))
                 .put(MultiActionsF.class, new MultiActionsF(player))
                 .put(MultiActionsG.class, new MultiActionsG(player))
                 .put(BadPacketsH.class, new BadPacketsH(player))
