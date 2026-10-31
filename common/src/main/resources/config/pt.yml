@@ -112,9 +112,10 @@ FastPlace:
     # Cancela blocos depois que o jogador deu exatamente 1 clique direito por tick nessa quantidade de ticks seguidos.
     # Com valores baixos, quem clica rápido às vezes perde blocos; quem faz drag quase nunca.
     cancel-after-ticks: 4
-    # Cancela blocos e dá flag depois dessa quantidade de cliques direitos seguidos exatamente a cada 2 ticks,
-    # ou exatamente a cada 3 ticks. Isso é a velocidade de um clique normal, então mantenha bem acima de 10.
-    slow-run-clicks: 20
+    # Cancela blocos depois dessa quantidade de cliques direitos seguidos exatamente a cada 2 ticks, ou exatamente
+    # a cada 3 ticks. Isso é a velocidade de um clique normal: com 6, quem clica a uns 10 CPS perde 1-3% dos blocos.
+    # O flag só vem a cada 20 desses cliques.
+    slow-cancel-after-clicks: 6
 
 # Verificação de NoSlow por simulação.
 # Grim considera erros no netcode. Difícil de gerar falsos positivos, até mesmo spamando o blotão direito e a offhand.

@@ -18,19 +18,20 @@ import org.jetbrains.annotations.NotNull;
 // A right click on a block or with an item sends a block placement or use item packet even when nothing gets placed,
 // so a held button shows up as single right clicks at that exact interval. Human clicking varies the interval and lands
 // several clicks in some ticks (butterfly, drag).
-// Every tick: blocks are cancelled after a short run, which fast clickers only reach by chance and then lose a few blocks.
-// Flags need a longer run, which clicking at 16 CPS or more still reaches now and then, so they should alert, not ban.
-// Every 2 or 3 ticks is as fast as normal clicking (10 and 6.7 per second), and on dev a human repeated an interval of
-// 2 ticks up to 9 times in a row, so only long runs are cancelled and flagged.
+// Blocks are cancelled after a short run, which human clicking only reaches by chance and then loses a few blocks.
+// Flags need a longer run: every tick, clicking at 16 CPS or more still reaches it now and then, so they should alert,
+// not ban. Every 2 or 3 ticks is as fast as normal clicking (10 and 6.7 per second), and on dev a human repeated an
+// interval of 2 ticks up to 9 times in a row, so those runs flag much later.
 @CheckData(name = "FastPlace", stableKey = "grim.scaffolding.fast_place", description = "Right-clicked at the same fast interval for too many clicks in a row")
 public class FastPlace extends BlockPlaceCheck implements PacketReceiveListener, BlockPlaceListener {
     private static final Verbose V = Verbose.of("interval={uint}, clicks={uint}");
     private static final int MAX_FAST_INTERVAL_TICKS = 3;
-    // Runs of right clicks in every tick flag every this many clicks
+    // Runs flag every this many clicks, at an interval of 1 tick or of 2 and 3 ticks
     private static final int FLAG_EVERY_TICK_CLICKS = 10;
+    private static final int FLAG_SLOW_CLICKS = 20;
 
     private int cancelAfterTicks;
-    private int slowRunClicks;
+    private int slowCancelAfterClicks;
     private int rightClicksThisTick;
     private int ticksSinceRightClick;
     // Ticks between the right clicks of the current run (0 while it has one click), and how many clicks it has
@@ -51,8 +52,7 @@ public class FastPlace extends BlockPlaceCheck implements PacketReceiveListener,
     public void onReload(@NotNull ConfigManager config) {
         super.onReload(config);
         this.cancelAfterTicks = config.getIntElse("FastPlace.cancel-after-ticks", 4);
-        // Flags come at every multiple of it, so it can't be below 1
-        this.slowRunClicks = Math.max(1, config.getIntElse("FastPlace.slow-run-clicks", 20));
+        this.slowCancelAfterClicks = config.getIntElse("FastPlace.slow-cancel-after-clicks", 6);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class FastPlace extends BlockPlaceCheck implements PacketReceiveListener,
             return;
         }
 
-        final int cancelAfterClicks = runInterval == 1 ? cancelAfterTicks : slowRunClicks;
+        final int cancelAfterClicks = runInterval == 1 ? cancelAfterTicks : slowCancelAfterClicks;
         if (runClicks >= cancelAfterClicks && shouldModifyPackets() && shouldCancel()) {
             place.resync();
         }
@@ -109,7 +109,7 @@ public class FastPlace extends BlockPlaceCheck implements PacketReceiveListener,
             runClicks = 2;
         }
 
-        final int flagEveryClicks = runInterval == 1 ? FLAG_EVERY_TICK_CLICKS : slowRunClicks;
+        final int flagEveryClicks = runInterval == 1 ? FLAG_EVERY_TICK_CLICKS : FLAG_SLOW_CLICKS;
         if (runClicks % flagEveryClicks == 0) {
             flag(V.write(verbose()).uint(runInterval).uint(runClicks));
         }

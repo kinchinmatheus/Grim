@@ -111,9 +111,10 @@ FastPlace:
     # Cancels blocks once the player has right-clicked exactly once per tick for this many ticks in a row.
     # Fast clickers sometimes lose blocks with low values, drag clicking almost never does.
     cancel-after-ticks: 4
-    # Cancels blocks and flags once the player has right-clicked this many times in a row exactly every 2 ticks,
-    # or exactly every 3 ticks. That is as fast as normal clicking, so keep it well above 10.
-    slow-run-clicks: 20
+    # Cancels blocks once the player has right-clicked this many times in a row exactly every 2 ticks, or exactly
+    # every 3 ticks. That is as fast as normal clicking: at 6, players clicking about 10 CPS lose 1-3% of their blocks.
+    # Flags only come every 20 such clicks.
+    slow-cancel-after-clicks: 6
 
 # Prediction-based no slow check
 # Grim accounts for buggy netcode here... hard to false even when spamming right click and offhand button
