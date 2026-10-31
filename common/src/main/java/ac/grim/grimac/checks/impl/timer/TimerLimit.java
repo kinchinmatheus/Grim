@@ -4,6 +4,8 @@ import ac.grim.grimac.api.config.ConfigManager;
 import ac.grim.grimac.checks.CheckData;
 import ac.grim.grimac.player.GrimPlayer;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
+import com.github.retrooper.packetevents.protocol.world.Location;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import org.jetbrains.annotations.NotNull;
 
 // This works around 1.3 timer, to prevent too high abuse - maybe there's a better solution?
@@ -22,7 +24,9 @@ public class TimerLimit extends Timer {
         // 1:1 with Timer minus cancelling the packet
         if (timerBalanceRealTime > System.nanoTime()) {
             // If timer check already flagged, don't flag.
-            if (!event.isCancelled()) {
+            // AFK players send bursts of still ticks after lag spikes; the only action here is a position setback,
+            // which can't take anything from a tick that didn't move, so still ticks only spend the balance
+            if (!event.isCancelled() && !isStillTick(event)) {
                 if (flag() && shouldSetback()) {
                     player.getSetbackTeleportUtil().executeNonSimulatingSetback();
                 }
@@ -33,6 +37,20 @@ public class TimerLimit extends Timer {
         }
 
         limitFallBehind();
+    }
+
+    // Runs before prediction, so the last claimed position and the rotation still belong to the previous tick
+    private boolean isStillTick(final PacketReceiveEvent event) {
+        // A 1.21.2+ tick end without a movement packet
+        if (!WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) return true;
+
+        WrapperPlayClientPlayerFlying flying = new WrapperPlayClientPlayerFlying(event);
+        Location location = flying.getLocation();
+        if (flying.hasPositionChanged() && !location.getPosition().equals(player.packetStateData.lastClaimedPosition)) {
+            return false;
+        }
+
+        return !flying.hasRotationChanged() || location.getYaw() == player.yaw && location.getPitch() == player.pitch;
     }
 
     @Override
