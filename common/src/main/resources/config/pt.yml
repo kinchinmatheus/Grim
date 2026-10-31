@@ -107,6 +107,11 @@ PositionPlace:
 RotationPlace:
     cancelvl: 5
 
+# Cancela blocos colocados em mais do que essa quantidade de ticks seguidos do cliente (20 ticks = 1 segundo).
+# Segurar o botão direito coloca a cada 4 ticks; FastPlace, drag e butterfly conseguem colocar em todo tick.
+FastPlace:
+    max-placement-ticks: 4
+
 # Verificação de NoSlow por simulação.
 # Grim considera erros no netcode. Difícil de gerar falsos positivos, até mesmo spamando o blotão direito e a offhand.
 # Muito mais estável que outros anticheats, mas por favor, reporte quaisquer falsos positivos. Eu já arrumei diversos
