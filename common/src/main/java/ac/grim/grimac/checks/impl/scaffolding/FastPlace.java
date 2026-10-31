@@ -17,12 +17,12 @@ import org.jetbrains.annotations.NotNull;
 // A right click on a block or with an item sends a block placement or use item packet even when nothing gets placed,
 // so FastPlace sends exactly one in every tick, while fast human clicking (butterfly, drag) leaves ticks with zero or several.
 // Blocks are cancelled after a short run, which fast clickers only reach by chance and then lose a few blocks.
-// Flags need a run long enough to rule chance out.
+// Flags need a longer run, which clicking at 16 CPS or more still reaches now and then, so they should alert, not ban.
 @CheckData(name = "FastPlace", stableKey = "grim.scaffolding.fast_place", description = "Right-clicked exactly once per tick for too many ticks in a row")
 public class FastPlace extends BlockPlaceCheck implements PacketReceiveListener, BlockPlaceListener {
     private static final Verbose V = Verbose.of("ticks={uint}");
     // Flags at this many ticks and again after each further interval of the same run
-    private static final int FLAG_INTERVAL_TICKS = 20;
+    private static final int FLAG_INTERVAL_TICKS = 10;
 
     private int cancelAfterTicks;
     private int rightClicksThisTick;
