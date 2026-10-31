@@ -28,7 +28,6 @@ public class RotationPlace extends BlockPlaceCheck implements BlockPlaceListener
     private static final Verbose V = Verbose.of("[pre-flying|post-flying]");
 
     private double flagBuffer = 0; // If the player flags once, force them to play legit, or we will cancel the tick before.
-    private boolean ignorePost = false;
 
     public RotationPlace(GrimPlayer player) {
         super(player);
@@ -40,12 +39,10 @@ public class RotationPlace extends BlockPlaceCheck implements BlockPlaceListener
         if (!player.cameraEntity.isSelf())
             return; // you don't send flying packets when spectating entities
         if (player.inVehicle()) return;
-        if (flagBuffer > 0 && !didRayTraceHit(place)) {
-            ignorePost = true;
-            // If the player hit and has flagged this check recently
-            if (flag(V.write(verbose()).bool(true)) && shouldModifyPackets() && shouldCancel()) {
-                place.resync();  // Deny the block placement.
-            }
+        // The rotation the client clicked with only arrives in the next flying packet, so a miss here
+        // can be a legit fast turn. Only cancel here and leave flagging to the post-flying check.
+        if (flagBuffer > 0 && !didRayTraceHit(place) && shouldModifyPackets() && shouldCancel()) {
+            place.resync();  // Deny the block placement.
         }
     }
 
@@ -57,26 +54,14 @@ public class RotationPlace extends BlockPlaceCheck implements BlockPlaceListener
             return; // you don't send flying packets when spectating entities
         if (player.inVehicle()) return;
 
-        // Don't flag twice
-        if (ignorePost) {
-            ignorePost = false;
-            return;
-        }
-
         // Ray trace to try and hit the target block.
         boolean hit = didRayTraceHit(place);
         // This can false with rapidly moving yaw in 1.8+ clients
         if (!hit) {
             flagBuffer = 1;
-            if (!ignorePost) { // Don't flag twice
-                flag(V.write(verbose()).bool(false));
-            }
+            flag(V.write(verbose()).bool(false));
         } else {
             flagBuffer = Math.max(0, flagBuffer - 0.1);
-        }
-
-        if (ignorePost) {
-            ignorePost = false;
         }
     }
 
