@@ -190,6 +190,10 @@ Reach:
     # Maximum reach in blocks while nerfed. It never raises the normal reach.
     nerf-max-reach: 2.8
     nerf-duration-seconds: 10
+    # Cancels hits while the player has left a transaction unanswered for longer than this many milliseconds.
+    # Hits are judged against where targets were when the player last answered, so holding transactions
+    # (backtrack, fake lag) lets a cheat hit where targets were seconds ago. -1 to disable
+    max-transaction-delay-ms: -1
 
 exploit:
     # You can gain high speeds when sprint jumping with an elytra, this prevents the exploit when set to false

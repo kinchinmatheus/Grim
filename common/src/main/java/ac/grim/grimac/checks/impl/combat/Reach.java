@@ -24,6 +24,7 @@ import ac.grim.grimac.checks.type.PacketReceiveListener;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.anticheat.MessageUtil;
 import ac.grim.grimac.utils.collisions.datatypes.SimpleCollisionBox;
+import ac.grim.grimac.utils.data.ShortToLongPair;
 import ac.grim.grimac.utils.data.packetentity.PacketEntity;
 import ac.grim.grimac.utils.data.packetentity.PacketEntitySizeable;
 import ac.grim.grimac.utils.data.packetentity.dragon.PacketEntityEnderDragonPart;
@@ -79,6 +80,7 @@ public class Reach extends Check implements PacketReceiveListener {
     private double nerfMaxReach;
     private long nerfDurationMillis;
     private long nerfExpiresAtMillis;
+    private long maxTransactionDelayMillis; // -1 disables
 
     public Reach(GrimPlayer player) {
         super(player);
@@ -105,6 +107,12 @@ public class Reach extends Check implements PacketReceiveListener {
     private void onInteract(PacketReceiveEvent event, int entityId, InteractionHand hand) {
         // Don't let the player teleport to bypass reach
         if (player.getSetbackTeleportUtil().shouldBlockMovement()) {
+            event.setCancelled(true);
+            player.onPacketCancel();
+            return;
+        }
+
+        if (shouldModifyPackets() && isTransactionHeldTooLong()) {
             event.setCancelled(true);
             player.onPacketCancel();
             return;
@@ -342,6 +350,15 @@ public class Reach extends Check implements PacketReceiveListener {
         return minDistance;
     }
 
+    // Hits are judged against the target positions the player has confirmed by answering transactions,
+    // so holding transactions back lets a cheat hit where targets were seconds ago
+    private boolean isTransactionHeldTooLong() {
+        if (maxTransactionDelayMillis < 0) return false;
+
+        ShortToLongPair oldestUnanswered = player.transactionsSent.peek();
+        return oldestUnanswered != null && System.nanoTime() - oldestUnanswered.second() > maxTransactionDelayMillis * 1_000_000L;
+    }
+
     private boolean isNerfActive() {
         return nerfVL >= 0 && System.currentTimeMillis() < nerfExpiresAtMillis;
     }
@@ -427,6 +444,7 @@ public class Reach extends Check implements PacketReceiveListener {
         this.nerfVL = config.getDoubleElse("Reach.nerf-vl", -1);
         this.nerfMaxReach = config.getDoubleElse("Reach.nerf-max-reach", 2.8);
         this.nerfDurationMillis = (long) (config.getDoubleElse("Reach.nerf-duration-seconds", 10) * 1000);
+        this.maxTransactionDelayMillis = config.getLongElse("Reach.max-transaction-delay-ms", -1);
     }
 
     private enum ResultType {

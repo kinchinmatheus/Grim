@@ -194,6 +194,10 @@ Reach:
     # Alcance máximo em blocos durante o nerf. Nunca aumenta o alcance normal.
     nerf-max-reach: 2.8
     nerf-duration-seconds: 10
+    # Cancela hits enquanto o jogador tiver uma transação sem resposta há mais do que esses milissegundos.
+    # Os hits são julgados contra onde os alvos estavam na última resposta, então segurar transações
+    # (backtrack, fake lag) deixa um cheat bater onde os alvos estavam segundos atrás. -1 para desabilitar
+    max-transaction-delay-ms: -1
 
 exploit:
     # Você pode ganhar altas velocidades se pular correndo com uma elytra, previne isso de ocorrer quando definido falso.
