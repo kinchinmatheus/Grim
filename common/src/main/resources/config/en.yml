@@ -244,6 +244,12 @@ max-ping-firework-boost: 1000
 # Set to -1 to disable polling. Set to a positive value to refresh every X ticks.
 update-permission-ticks: -1
 
+# Writes a summary of each burst of left clicks from clients older than 1.9 to click-stats/<date>.jsonl, to calibrate
+# autoclicker detection against real players. It never flags or cancels. Files are deleted after 7 days,
+# also while this is disabled.
+click-stats:
+    enabled: false
+
 # Schema markers — touch only if you know what you're doing.
 #   config-flavor:  V2 = Grim 2.x build, V3 = Grim 3.x. The plugin refuses
 #                   to load a config whose flavor doesn't match its own

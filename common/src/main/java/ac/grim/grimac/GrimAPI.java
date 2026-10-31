@@ -13,6 +13,7 @@ import ac.grim.grimac.internal.storage.backend.postgres.PostgresBackendProvider;
 import ac.grim.grimac.internal.storage.backend.redis.RedisBackendProvider;
 import ac.grim.grimac.internal.storage.backend.sqlite.SqliteBackendProvider;
 import ac.grim.grimac.manager.AlertManagerImpl;
+import ac.grim.grimac.manager.ClickStatsLog;
 import ac.grim.grimac.manager.DiscordManager;
 import ac.grim.grimac.manager.InitManager;
 import ac.grim.grimac.manager.SpectateManager;
@@ -46,6 +47,7 @@ public final class GrimAPI {
     private final AlertManagerImpl alertManager;
     private final SpectateManager spectateManager;
     private final DiscordManager discordManager;
+    private final ClickStatsLog clickStatsLog;
     private final PlayerDataManager playerDataManager;
     private final TickManager tickManager;
     private final GrimExtensionManager extensionManager;
@@ -62,6 +64,7 @@ public final class GrimAPI {
         this.alertManager = new AlertManagerImpl();
         this.spectateManager = new SpectateManager();
         this.discordManager = new DiscordManager();
+        this.clickStatsLog = new ClickStatsLog();
         this.playerDataManager = new PlayerDataManager();
         this.tickManager = new TickManager();
         this.extensionManager = new GrimExtensionManager();

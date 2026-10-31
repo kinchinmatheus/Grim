@@ -260,5 +260,11 @@ max-ping-firework-boost: 1000
 # Defina -1 para desativar a verificação periódica. Use um valor positivo para atualizar a cada X ticks.
 update-permission-ticks: -1
 
+# Grava um resumo de cada sequência de cliques esquerdos de clientes anteriores à 1.9 em click-stats/<data>.jsonl,
+# para calibrar a detecção de autoclicker com jogadores reais. Nunca flaga nem cancela. Os arquivos são apagados
+# depois de 7 dias, mesmo com isto desativado.
+click-stats:
+    enabled: false
+
 config-flavor: V2
 config-version: 11

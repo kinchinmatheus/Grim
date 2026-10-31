@@ -54,6 +54,7 @@ public class InitManager {
                 .add(GrimAPI.INSTANCE.getAlertManager())
                 .add(GrimAPI.INSTANCE.getDiscordManager())
                 .add(GrimAPI.INSTANCE.getSpectateManager())
+                .add(GrimAPI.INSTANCE.getClickStatsLog())
                 .add(GrimAPI.INSTANCE.getDataStoreLifecycle())
                 .add(new JavaVersion())
                 .add(new ViaVersion())
@@ -63,6 +64,7 @@ public class InitManager {
 
         initializersOnStop = ImmutableList.<StoppableInitable>builder()
                 .add(new TerminatePacketEvents())
+                .add(GrimAPI.INSTANCE.getClickStatsLog())
                 .add(GrimAPI.INSTANCE.getDataStoreLifecycle())
                 .addAll(extraStoppableInitables)
                 .build();

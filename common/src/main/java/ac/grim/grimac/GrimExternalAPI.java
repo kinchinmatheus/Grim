@@ -224,6 +224,7 @@ public class GrimExternalAPI implements GrimAbstractAPI, ConfigReloadObserver, S
         GrimAPI.INSTANCE.getAlertManager().reload(configManager);
         GrimAPI.INSTANCE.getDiscordManager().reload();
         GrimAPI.INSTANCE.getSpectateManager().reload();
+        GrimAPI.INSTANCE.getClickStatsLog().reload();
         // First-load guard: load() calls reload() before start() runs, so this fires once with started=false before the datastore exists. Subsequent /grim reload calls see started=true and proceed (including disabled→enabled flips — DataStoreLifecycle.reload() re-evaluates builder.enabled() each time).
         if (!started) return;
         // Hot-reload picks up backend swaps + routing + connection-pool edits without a server restart. Drains in-flight writes for shutdown-drain-timeout-ms then drops; brief mid-reload unavailability is the tradeoff.
