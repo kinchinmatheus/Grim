@@ -120,6 +120,7 @@ public class CheckManager implements BasicReloadable {
                 .put(PacketOrderProcessor.class, player.packetOrderProcessor)
                 .put(Reach.class, new Reach(player))
                 .put(AttackCadence.class, new AttackCadence(player))
+                .put(LeftClickProcessor.class, new LeftClickProcessor(player)) // Before the checks that read its ticks
                 .put(ClickStatsCollector.class, new ClickStatsCollector(player))
                 .put(PacketEntityReplication.class, player.packetEntityReplication)
                 .put(PacketChangeGameState.class, new PacketChangeGameState(player))
