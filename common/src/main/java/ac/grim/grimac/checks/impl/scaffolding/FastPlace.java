@@ -18,15 +18,17 @@ import org.jetbrains.annotations.NotNull;
 // A right click on a block or with an item sends a block placement or use item packet even when nothing gets placed,
 // so a held button shows up as single right clicks at that exact interval. Human clicking varies the interval and lands
 // several clicks in some ticks (butterfly, drag).
+// Every 3 ticks isn't tracked: 6.7 clicks per second is no faster than normal clicking, and a human clicking about 7 CPS
+// lands on that exact interval naturally, so limiting it only cost legit blocks.
 // Blocks are cancelled after a short run, which human clicking only reaches by chance and then loses a few blocks.
 // Flags need a longer run: every tick, clicking at 16 CPS or more still reaches it now and then, so they should alert,
-// not ban. Every 2 or 3 ticks is as fast as normal clicking (10 and 6.7 per second), and on dev a human repeated an
-// interval of 2 ticks up to 9 times in a row, so those runs flag much later.
+// not ban. Every 2 ticks is as fast as clicking at 10 CPS, and on dev a human repeated that interval up to 9 times in a
+// row, so those runs cancel and flag much later.
 @CheckData(name = "FastPlace", stableKey = "grim.scaffolding.fast_place", description = "Right-clicked at the same fast interval for too many clicks in a row")
 public class FastPlace extends BlockPlaceCheck implements PacketReceiveListener, BlockPlaceListener {
     private static final Verbose V = Verbose.of("interval={uint}, clicks={uint}");
-    private static final int MAX_FAST_INTERVAL_TICKS = 3;
-    // Runs flag every this many clicks, at an interval of 1 tick or of 2 and 3 ticks
+    private static final int MAX_FAST_INTERVAL_TICKS = 2;
+    // Runs flag every this many clicks, at an interval of 1 tick or of 2 ticks
     private static final int FLAG_EVERY_TICK_CLICKS = 10;
     private static final int FLAG_SLOW_CLICKS = 20;
 
@@ -52,7 +54,7 @@ public class FastPlace extends BlockPlaceCheck implements PacketReceiveListener,
     public void onReload(@NotNull ConfigManager config) {
         super.onReload(config);
         this.cancelAfterTicks = config.getIntElse("FastPlace.cancel-after-ticks", 4);
-        this.slowCancelAfterClicks = config.getIntElse("FastPlace.slow-cancel-after-clicks", 6);
+        this.slowCancelAfterClicks = config.getIntElse("FastPlace.slow-cancel-after-clicks", 10);
     }
 
     @Override

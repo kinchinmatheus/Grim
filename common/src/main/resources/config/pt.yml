@@ -108,14 +108,15 @@ RotationPlace:
     cancelvl: 5
 
 # Segurar o botão direito repete o clique a cada 4 ticks (20 ticks = 1 segundo); o FastPlace clica a cada 1, 2 ou 3 ticks.
+# A cada 3 ticks não é limitado: não é mais rápido que clicar a 7 CPS.
 FastPlace:
     # Cancela blocos depois que o jogador deu exatamente 1 clique direito por tick nessa quantidade de ticks seguidos.
     # Com valores baixos, quem clica rápido às vezes perde blocos; quem faz drag quase nunca.
     cancel-after-ticks: 4
-    # Cancela blocos depois dessa quantidade de cliques direitos seguidos exatamente a cada 2 ticks, ou exatamente
-    # a cada 3 ticks. Isso é a velocidade de um clique normal: com 6, quem clica a uns 10 CPS perde 1-3% dos blocos.
+    # Cancela blocos depois dessa quantidade de cliques direitos seguidos exatamente a cada 2 ticks. Isso é a velocidade
+    # de clicar a 10 CPS, e um humano já repetiu esse intervalo até 9 vezes seguidas em dev.
     # O flag só vem a cada 20 desses cliques.
-    slow-cancel-after-clicks: 6
+    slow-cancel-after-clicks: 10
 
 # Trocar o item da mão depois de tomar sopa no mesmo tick (clientes 1.8).
 AutoSoup:
