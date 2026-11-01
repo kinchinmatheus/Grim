@@ -127,6 +127,16 @@ AutoRefill:
     # After a flag, the player's inventory clicks are cancelled for this many seconds.
     cancel-seconds: 5
 
+# Keeping one click rate for too long while attacking (1.8 clients): autoclickers with weak randomization.
+ClickRegularity:
+    # Seconds of clicking at 10+ CPS while attacking, in which each second differs by at most 1 click from the one
+    # before it. Pauses don't reset the count, a bigger change does. The most regular hand recorded lasted 21.
+    min-seconds: 45
+    # Chance of cancelling each hit while limited. 0.5 leaves a 12 CPS clicker with the hits of a 6 CPS one. 0 only alerts.
+    cancel-chance: 0.5
+    # The limit lasts this many seconds after the last regular second.
+    cancel-seconds: 120
+
 # Prediction-based no slow check
 # Grim accounts for buggy netcode here... hard to false even when spamming right click and offhand button
 # Much more stable than other anticheats, but please report any falses... I have fixed a ton of netcode issues here.

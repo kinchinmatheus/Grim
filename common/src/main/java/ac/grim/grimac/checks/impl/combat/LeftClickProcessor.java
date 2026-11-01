@@ -42,8 +42,7 @@ public final class LeftClickProcessor extends GrimProcessor implements PacketRec
             return;
         }
 
-        if (packetType == PacketType.Play.Client.INTERACT_ENTITY && new WrapperPlayClientInteractEntity(event).getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK
-                || packetType == PacketType.Play.Client.ATTACK) {
+        if (isAttack(event)) {
             attacksThisTick++;
             return;
         }
@@ -66,6 +65,12 @@ public final class LeftClickProcessor extends GrimProcessor implements PacketRec
         if (isTickPacket(packetType)) {
             endTick();
         }
+    }
+
+    static boolean isAttack(final PacketReceiveEvent event) {
+        final PacketTypeCommon packetType = event.getPacketType();
+        return packetType == PacketType.Play.Client.INTERACT_ENTITY && new WrapperPlayClientInteractEntity(event).getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK
+                || packetType == PacketType.Play.Client.ATTACK;
     }
 
     private void endTick() {

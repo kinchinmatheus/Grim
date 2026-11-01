@@ -128,6 +128,16 @@ AutoRefill:
     # Depois de um flag, os cliques no inventário do jogador são cancelados por essa quantidade de segundos.
     cancel-seconds: 5
 
+# Manter o mesmo ritmo de cliques por tempo demais enquanto bate (clientes 1.8): autoclickers de randomização fraca.
+ClickRegularity:
+    # Segundos clicando a 10+ CPS enquanto bate, em que cada segundo difere em no máximo 1 clique do anterior.
+    # Pausas não zeram a contagem, uma mudança maior zera. A mão mais regular já gravada chegou a 21.
+    min-seconds: 45
+    # Chance de cancelar cada hit enquanto limitado. 0.5 deixa um clicker a 12 CPS com os hits de um a 6 CPS. 0 só alerta.
+    cancel-chance: 0.5
+    # O limite dura essa quantidade de segundos depois do último segundo regular.
+    cancel-seconds: 120
+
 # Verificação de NoSlow por simulação.
 # Grim considera erros no netcode. Difícil de gerar falsos positivos, até mesmo spamando o blotão direito e a offhand.
 # Muito mais estável que outros anticheats, mas por favor, reporte quaisquer falsos positivos. Eu já arrumei diversos
