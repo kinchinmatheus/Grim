@@ -7,6 +7,7 @@ import ac.grim.grimac.api.storage.verbose.Verbose;
 import ac.grim.grimac.player.GrimPlayer;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 
 @CheckData(name = "BadPacketsR", stableKey = "grim.badpackets.position_starvation", description = "Stopped sending position updates while still responding to transactions", decay = 0.25, experimental = true)
 public class BadPacketsR extends Check implements PacketReceiveListener {
@@ -46,6 +47,10 @@ public class BadPacketsR extends Check implements PacketReceiveListener {
             positions++;
         } else if ((event.getPacketType() == PacketType.Play.Client.STEER_VEHICLE || event.getPacketType() == PacketType.Play.Client.VEHICLE_MOVE)
                 && player.inVehicle()) {
+            positions++;
+        } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_ROTATION && player.inVehicle()
+                && player.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_2)) {
+            // player_input is not sent every tick, so we need to stick to this packet
             positions++;
         }
     }
