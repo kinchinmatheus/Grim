@@ -39,11 +39,11 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-// Only players that RotationSpeedCap or AttackCadence keep flagging are tested. While they fight and look at their
-// target, a fake armored player is shown to them alone, behind or beside them on the side away from the target, and
-// closer than it. An aura picks the closest target every tick: on the next tick its sent look starts turning to the
-// bait at its capped speed, away from the real target. A player cannot react to what they cannot see that fast.
-// Reacting to 3 of the last 5 baits flags.
+// Only players that RotationSpeedCap keeps flagging are tested: fast clicking alone does not suggest an aura. While they
+// fight and look at their target, a fake armored player is shown to them alone, behind or beside them on the side away
+// from the target, and closer than it. An aura picks the closest target every tick: on the next tick its sent look
+// starts turning to the bait at its capped speed, away from the real target. A player cannot react to what they cannot
+// see that fast. Reacting to 3 of the last 5 baits flags.
 @CheckData(name = "AuraBot", stableKey = "grim.combat.aura_bait", description = "Turned toward a fake player out of view")
 public class AuraBait extends Check implements PacketReceiveListener {
     private static final Verbose V = Verbose.of("reactions={uint}, baits={uint}");
@@ -52,7 +52,6 @@ public class AuraBait extends Check implements PacketReceiveListener {
 
     private static final long SUSPICION_WINDOW_MS = TimeUnit.MINUTES.toMillis(3);
     private static final long SUSPICION_DURATION_MS = TimeUnit.MINUTES.toMillis(5);
-    private static final int MIN_CADENCE_FLAGS = 2;
     // One pile of capped turns stays in RotationSpeedCap's buffer for up to 6 evaluations
     private static final int MIN_SPEED_CAP_FLAGS = 7;
     private static final long MIN_TIME_BETWEEN_BAITS_MS = TimeUnit.SECONDS.toMillis(8);
@@ -95,7 +94,6 @@ public class AuraBait extends Check implements PacketReceiveListener {
     private static final int NOT_CONFIRMED = -1;
 
     private final RecentFlags speedCapFlags = new RecentFlags();
-    private final RecentFlags cadenceFlags = new RecentFlags();
     private final ArrayDeque<Boolean> results = new ArrayDeque<>(RESULTS_KEPT + 1);
     private long suspicionEndTime;
     private long nextBaitTime;
@@ -166,16 +164,12 @@ public class AuraBait extends Check implements PacketReceiveListener {
 
     private void updateSuspicion(long now) {
         boolean speedCapFlagged = speedCapFlags.update(player.checkManager.get(RotationSpeedCap.class), now);
-        boolean cadenceFlagged = cadenceFlags.update(player.checkManager.get(AttackCadence.class), now);
-        if (!speedCapFlagged && !cadenceFlagged) return;
+        if (!speedCapFlagged || speedCapFlags.count() < MIN_SPEED_CAP_FLAGS) return;
 
-        if (speedCapFlags.count() >= MIN_SPEED_CAP_FLAGS || cadenceFlags.count() >= MIN_CADENCE_FLAGS
-                || (speedCapFlags.count() > 0 && cadenceFlags.count() > 0)) {
-            if (now >= suspicionEndTime) {
-                nextBaitTime = now + randomTimeBetweenBaits();
-            }
-            suspicionEndTime = now + SUSPICION_DURATION_MS;
+        if (now >= suspicionEndTime) {
+            nextBaitTime = now + randomTimeBetweenBaits();
         }
+        suspicionEndTime = now + SUSPICION_DURATION_MS;
     }
 
     private void trySpawnBait(long now) {
