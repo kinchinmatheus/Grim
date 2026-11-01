@@ -121,6 +121,11 @@ AutoSoup:
     # After a flag, the player's soups are cancelled for this many seconds.
     cancel-seconds: 5
 
+# Inventory clicks outside the client tick (Mouse Tweaks, refill cheats) or while the inventory is closed (1.8 clients).
+AutoRefill:
+    # After a flag, the player's inventory clicks are cancelled for this many seconds.
+    cancel-seconds: 5
+
 # Prediction-based no slow check
 # Grim accounts for buggy netcode here... hard to false even when spamming right click and offhand button
 # Much more stable than other anticheats, but please report any falses... I have fixed a ton of netcode issues here.

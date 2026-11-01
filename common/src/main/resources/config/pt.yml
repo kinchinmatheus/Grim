@@ -122,6 +122,11 @@ AutoSoup:
     # Depois de um flag, as sopas do jogador são canceladas por essa quantidade de segundos.
     cancel-seconds: 5
 
+# Cliques no inventário fora do tick do cliente (Mouse Tweaks, cheats de refill) ou com o inventário fechado (clientes 1.8).
+AutoRefill:
+    # Depois de um flag, os cliques no inventário do jogador são cancelados por essa quantidade de segundos.
+    cancel-seconds: 5
+
 # Verificação de NoSlow por simulação.
 # Grim considera erros no netcode. Difícil de gerar falsos positivos, até mesmo spamando o blotão direito e a offhand.
 # Muito mais estável que outros anticheats, mas por favor, reporte quaisquer falsos positivos. Eu já arrumei diversos

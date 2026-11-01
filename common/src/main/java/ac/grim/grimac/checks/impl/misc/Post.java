@@ -101,7 +101,8 @@ public class Post extends Check implements PacketReceiveListener, PacketSendList
                 || ATTACK.equals(packetType) || SPECTATE_ENTITY.equals(packetType) || PUNCH.equals(packetType)
                 || USE_ITEM.equals(packetType) || PLAYER_DIGGING.equals(packetType)) {
             post.add(event.getPacketType());
-        } else if (CLICK_WINDOW.equals(packetType) && player.getClientVersion().isOlderThan(ClientVersion.V_1_13)) {
+        } else if (CLICK_WINDOW.equals(packetType) && player.getClientVersion().isOlderThan(ClientVersion.V_1_13)
+                && player.getClientVersion() != ClientVersion.V_1_8) { // AutoRefill flags these for 1.8 clients
             // Why do 1.13+ players send the click window packet whenever? This doesn't make sense.
             post.add(event.getPacketType());
         } else if (ANIMATION.equals(packetType)

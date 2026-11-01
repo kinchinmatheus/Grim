@@ -3,6 +3,7 @@ package ac.grim.grimac.events.packets;
 import ac.grim.grimac.GrimAPI;
 import ac.grim.grimac.checks.impl.badpackets.*;
 import ac.grim.grimac.checks.impl.elytra.ElytraC;
+import ac.grim.grimac.checks.impl.inventory.AutoRefill;
 import ac.grim.grimac.player.GrimPlayer;
 import ac.grim.grimac.utils.chunks.ChunkSectionCache;
 import ac.grim.grimac.utils.data.KnownInput;
@@ -169,6 +170,7 @@ public class PacketPlayerRespawn extends PacketListenerAbstract {
                 player.filterMojangStupidityOnMojangStupidity.zero();
 
                 player.checkManager.get(BadPacketsM.class).onRespawn();
+                player.checkManager.get(AutoRefill.class).onRespawn();
 
                 final boolean keepTrackedData = this.hasFlag(respawn, KEEP_TRACKED_DATA);
 
