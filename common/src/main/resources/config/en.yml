@@ -116,6 +116,11 @@ FastPlace:
     # Flags only come every 20 such clicks.
     slow-cancel-after-clicks: 6
 
+# Switching the held item after eating soup in the same tick (1.8 clients).
+AutoSoup:
+    # After a flag, the player's soups are cancelled for this many seconds.
+    cancel-seconds: 5
+
 # Prediction-based no slow check
 # Grim accounts for buggy netcode here... hard to false even when spamming right click and offhand button
 # Much more stable than other anticheats, but please report any falses... I have fixed a ton of netcode issues here.
