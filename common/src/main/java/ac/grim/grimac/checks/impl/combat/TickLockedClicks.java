@@ -12,7 +12,7 @@ import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 // drifts and the timing varies, so a tick with no click or with two comes after a few seconds at most.
 @CheckData(name = "AutoClicker", stableKey = "grim.combat.tick_locked_clicks", description = "Clicked exactly once per tick for too many ticks in a row while attacking")
 public class TickLockedClicks extends Check implements PacketReceiveListener {
-    private static final Verbose V = Verbose.of("ticks={uint}, attacks={uint}");
+    private static final Verbose V = Verbose.of("cps=20, ticks={uint}, attacks={uint}");
     // 2 seconds. Simulated hand clicking at 18-22 CPS with 20% interval variation reaches it in 5% of 10 second
     // bursts, and 60 ticks in 0.3%, so a ban has to wait for repeated flags.
     private static final int MIN_FLAGGED_TICKS = 40;

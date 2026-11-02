@@ -17,7 +17,7 @@ import java.util.concurrent.ThreadLocalRandom;
 // That margin is too small to ban on, so regular players only lose part of their hits for a while.
 @CheckData(name = "ClickRegularity", stableKey = "grim.combat.click_regularity", description = "Kept the same click rate for too long while attacking")
 public class ClickRegularity extends Check implements PacketReceiveListener {
-    private static final Verbose V = Verbose.of("seconds={uint}, clicks={uint}");
+    private static final Verbose V = Verbose.of("cps={uint}, seconds={uint}");
     private static final int WINDOW_TICKS = 20;
     // Hand clicking below this rate is regular too, and gives no edge worth limiting
     private static final int MIN_WINDOW_CLICKS = 10;
@@ -120,7 +120,7 @@ public class ClickRegularity extends Check implements PacketReceiveListener {
             if (regularSeconds >= minRegularSeconds) {
                 limitedUntil = System.currentTimeMillis() + cancelMillis;
                 if (regularSeconds % minRegularSeconds == 0) {
-                    flag(V.write(verbose()).uint(regularSeconds).uint(clicks));
+                    flag(V.write(verbose()).uint(clicks).uint(regularSeconds));
                 }
             }
         }
