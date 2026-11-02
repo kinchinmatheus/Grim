@@ -1,7 +1,7 @@
 package ac.grim.grimac.checks.impl.combat;
 
-// One burst of left clicks, tick by tick. Only its summary leaves memory: interval counts, single attack runs and
-// click count dispersion, never the click sequence itself.
+// One burst of left clicks, tick by tick. Only its summary leaves memory: interval counts, single attack runs, click
+// count dispersion and the clicking around other actions, never the click sequence itself.
 final class ClickBurst {
     // Clicks further apart than this end the burst, and so does reaching MAX_TICKS
     private static final int MAX_INTERVAL_TICKS = 20;
@@ -17,12 +17,26 @@ final class ClickBurst {
     private final long startMillis;
     private final byte[] clicksPerTick = new byte[MAX_TICKS];
     private final byte[] attacksPerTick = new byte[MAX_TICKS];
+    private final byte[] slotChangesPerTick = new byte[MAX_TICKS];
+    private final byte[] scrollStepsPerTick = new byte[MAX_TICKS];
+    private final byte[] rightClicksPerTick = new byte[MAX_TICKS];
     private int ticks;
     private int lastClickTick = -1;
     private int clicks;
+    private int nonWeaponClicks;
+    private int playerAttacks;
 
     ClickBurst(long startMillis) {
         this.startMillis = startMillis;
+    }
+
+    // The actions of the tick that the next addTick closes
+    void addActions(int slotChanges, int scrollSteps, int rightClicks, int nonWeaponClicks, int playerAttacks) {
+        slotChangesPerTick[ticks] = (byte) Math.min(slotChanges, Byte.MAX_VALUE);
+        scrollStepsPerTick[ticks] = (byte) Math.min(scrollSteps, Byte.MAX_VALUE);
+        rightClicksPerTick[ticks] = (byte) Math.min(rightClicks, Byte.MAX_VALUE);
+        this.nonWeaponClicks += nonWeaponClicks;
+        this.playerAttacks += playerAttacks;
     }
 
     void addTick(int clicks, int attacks) {
@@ -95,12 +109,33 @@ final class ClickBurst {
                 .append(",\"tr\":").append(toJsonArray(transitions))
                 .append(",\"w20\":").append(windowDispersion(span, SHORT_WINDOW_TICKS))
                 .append(",\"w60\":").append(windowDispersion(span, LONG_WINDOW_TICKS))
+                .append(",\"nw\":").append(nonWeaponClicks)
+                .append(",\"pa\":").append(playerAttacks)
+                .append(",\"sg\":").append(toJsonArray(clickGapsAround(slotChangesPerTick, span)))
+                .append(",\"ssg\":").append(toJsonArray(clickGapsAround(scrollStepsPerTick, span)))
+                .append(",\"rg\":").append(toJsonArray(clickGapsAround(rightClicksPerTick, span)))
                 .append('}')
                 .toString();
     }
 
     private static void countRun(int[] runs, int length) {
         if (length > 0) runs[Math.min(length, MAX_RUN_LENGTH)]++;
+    }
+
+    // How many ticks the clicks stopped around each action: index 0 is a click in the action's own tick, otherwise it's
+    // the interval between the clicks on either side. The span starts and ends on a click, so both sides exist.
+    private int[] clickGapsAround(byte[] actionsPerTick, int span) {
+        final int[] gaps = new int[MAX_INTERVAL_TICKS + 1];
+        int previousClickTick = 0;
+        for (int tick = 0; tick < span; tick++) {
+            if (clicksPerTick[tick] > 0) previousClickTick = tick;
+            if (actionsPerTick[tick] == 0) continue;
+
+            int nextClickTick = tick;
+            while (clicksPerTick[nextClickTick] == 0) nextClickTick++;
+            gaps[nextClickTick - previousClickTick] += actionsPerTick[tick];
+        }
+        return gaps;
     }
 
     private static int bucket(int interval) {
