@@ -186,6 +186,11 @@ bukkit {
             default = Permission.Default.OP
         }
 
+        register("grim.cps") {
+            description = "Check the clicks per second of a player"
+            default = Permission.Default.OP
+        }
+
         register("grim.brand") {
             description = "Show client brands on join"
             default = Permission.Default.OP

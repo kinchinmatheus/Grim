@@ -122,6 +122,7 @@ public class CheckManager implements BasicReloadable {
                 .put(AttackCadence.class, new AttackCadence(player))
                 .put(LeftClickProcessor.class, new LeftClickProcessor(player)) // Before the checks that read its ticks
                 .put(ClickStatsCollector.class, new ClickStatsCollector(player))
+                .put(ClickRateMeter.class, new ClickRateMeter(player))
                 .put(TickLockedClicks.class, new TickLockedClicks(player))
                 .put(ClickRegularity.class, new ClickRegularity(player))
                 .put(PacketEntityReplication.class, player.packetEntityReplication)
