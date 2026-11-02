@@ -123,8 +123,10 @@ public class CheckManager implements BasicReloadable {
                 .put(LeftClickProcessor.class, new LeftClickProcessor(player)) // Before the checks that read its ticks
                 .put(ClickStatsCollector.class, new ClickStatsCollector(player))
                 .put(ClickRateMeter.class, new ClickRateMeter(player))
+                .put(AutoClickSuspicion.class, new AutoClickSuspicion(player))
                 .put(TickLockedClicks.class, new TickLockedClicks(player))
                 .put(ClickRegularity.class, new ClickRegularity(player))
+                .put(NonStopClicks.class, new NonStopClicks(player))
                 .put(PacketEntityReplication.class, player.packetEntityReplication)
                 .put(PacketChangeGameState.class, new PacketChangeGameState(player))
                 .put(AutoSoup.class, new AutoSoup(player))

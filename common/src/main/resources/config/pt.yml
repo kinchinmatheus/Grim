@@ -138,6 +138,11 @@ ClickRegularity:
     # O limite dura essa quantidade de segundos depois do último segundo regular.
     cancel-seconds: 120
 
+# Clicar por tempo demais sem pausa enquanto bate (clientes 1.8). Só gera flag e alerta a staff.
+NonStopClicks:
+    # Segundos a 10+ CPS sem um intervalo de 5 ticks entre cliques. O maior já gravado à mão durou 16,6.
+    min-seconds: 30
+
 # Verificação de NoSlow por simulação.
 # Grim considera erros no netcode. Difícil de gerar falsos positivos, até mesmo spamando o blotão direito e a offhand.
 # Muito mais estável que outros anticheats, mas por favor, reporte quaisquer falsos positivos. Eu já arrumei diversos

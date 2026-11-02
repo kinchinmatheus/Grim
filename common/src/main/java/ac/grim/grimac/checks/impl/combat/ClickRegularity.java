@@ -119,8 +119,8 @@ public class ClickRegularity extends Check implements PacketReceiveListener {
             regularSeconds = Math.abs(clicks - previousWindowClicks) <= MAX_WINDOW_DIFFERENCE ? regularSeconds + 1 : 0;
             if (regularSeconds >= minRegularSeconds) {
                 limitedUntil = System.currentTimeMillis() + cancelMillis;
-                if (regularSeconds % minRegularSeconds == 0) {
-                    flag(V.write(verbose()).uint(clicks).uint(regularSeconds));
+                if (regularSeconds % minRegularSeconds == 0 && flag(V.write(verbose()).uint(clicks).uint(regularSeconds))) {
+                    player.checkManager.get(AutoClickSuspicion.class).alert(clicks);
                 }
             }
         }

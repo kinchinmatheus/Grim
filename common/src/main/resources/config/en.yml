@@ -137,6 +137,11 @@ ClickRegularity:
     # The limit lasts this many seconds after the last regular second.
     cancel-seconds: 120
 
+# Clicking for too long without a pause while attacking (1.8 clients). It only flags and alerts staff.
+NonStopClicks:
+    # Seconds at 10+ CPS with no gap of 5 ticks between clicks. The longest recorded by hand lasted 16.6.
+    min-seconds: 30
+
 # Prediction-based no slow check
 # Grim accounts for buggy netcode here... hard to false even when spamming right click and offhand button
 # Much more stable than other anticheats, but please report any falses... I have fixed a ton of netcode issues here.
