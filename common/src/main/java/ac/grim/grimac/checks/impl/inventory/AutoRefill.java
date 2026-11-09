@@ -6,6 +6,7 @@ import ac.grim.grimac.api.storage.verbose.Verbose;
 import ac.grim.grimac.checks.Check;
 import ac.grim.grimac.checks.CheckData;
 import ac.grim.grimac.checks.type.PacketReceiveListener;
+import ac.grim.grimac.checks.type.PrePredictionPacketReceiveListener;
 import ac.grim.grimac.player.GrimPlayer;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -24,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
 // A click outside the tick is only known once the transaction arrives, after it went through, so the clicks that
 // follow a flag are cancelled instead.
 @CheckData(name = "AutoRefill", stableKey = "grim.inventory.auto_refill", description = "Clicked in the inventory outside the client tick or while it was closed")
-public class AutoRefill extends Check implements PacketReceiveListener {
+public class AutoRefill extends Check implements PacketReceiveListener, PrePredictionPacketReceiveListener {
     // Shape index == kind constant value
     private static final Verbose V = Verbose
             .of("outside tick, window={sint}, slot={sint}")
@@ -63,15 +64,18 @@ public class AutoRefill extends Check implements PacketReceiveListener {
         inventoryOpen = false;
     }
 
+    // A movement packet that the timer checks cancel never reaches the packet checks, but it still ended a client tick
+    @Override
+    public void onPrePredictionPacketReceive(final PacketReceiveEvent event) {
+        if (isTickPacket(event.getPacketType())) {
+            sentFlying = true;
+            clickedAfterFlying = false;
+        }
+    }
+
     @Override
     public void onPacketReceive(final PacketReceiveEvent event) {
         final PacketTypeCommon packetType = event.getPacketType();
-        if (isTickPacket(packetType)) {
-            sentFlying = true;
-            clickedAfterFlying = false;
-            return;
-        }
-
         if (isTransaction(packetType) && player.packetStateData.lastTransactionPacketWasValid) {
             if (sentFlying && clickedAfterFlying
                     && flag(V.write(verbose(), KIND_OUTSIDE_TICK).sint(windowClickedAfterFlying).sint(slotClickedAfterFlying))) {
@@ -105,7 +109,9 @@ public class AutoRefill extends Check implements PacketReceiveListener {
             slotClickedAfterFlying = click.getSlot();
         }
 
-        if (click.getWindowId() == PLAYER_INVENTORY_WINDOW && !inventoryOpen
+        // The client reads the rest of the key presses of the tick on the screen it just closed, so a hotbar or drop key
+        // pressed right after the close key still clicks the slot under the cursor, after the close packet
+        if (click.getWindowId() == PLAYER_INVENTORY_WINDOW && !inventoryOpen && !player.packetOrderProcessor.isClosingInventory()
                 && flag(V.write(verbose(), KIND_INVENTORY_CLOSED).sint(click.getSlot()))) {
             cancelClicksUntil = System.currentTimeMillis() + cancelClicksMillis;
         }
